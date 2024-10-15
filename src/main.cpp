@@ -1,6 +1,4 @@
-//
-// Created by havso on 07/10/2024.
-//
+
 //
 // Created by havso on 07/10/2024.
 //
@@ -8,14 +6,14 @@
 #include <iostream>
 #include "SpheroRobot.hpp"
 #include "misc.hpp"
-
+#include "keyboard_input.hpp"
 #include <threepp/threepp.hpp>
 
 #include "threepp/helpers/CameraHelper.hpp"
 using namespace threepp;
 
 auto createPlane() {
-    auto geometry = PlaneGeometry::create(50,50);
+    auto geometry = PlaneGeometry::create(500,500);
     geometry->rotateX(-math::PI/2);
     auto material = MeshBasicMaterial::create();
     material->color = Color::darkgreen;
@@ -31,7 +29,7 @@ auto bigObj() {
     return Mesh::create(geometry, material);
 }
 
-class RobotController: public KeyListener {
+/*class RobotController: public KeyListener {
 public:
 
     float deltaTime;
@@ -84,13 +82,13 @@ private:
     SpheroRobot *robot;
     float translationSpeed = 50;
     float rotationSpeed = 0.2;
-
     uint16_t heading = 0;
+};*/
 
 
-};
 
 int main() {
+    RobotController ctrl;
     Canvas canvas("SpheroSim");
     GLRenderer renderer(canvas.size());
 
@@ -106,7 +104,6 @@ int main() {
     SpheroRobot robot;
     scene.add(robot);
     auto& virtualCamera = robot.getVirtualCamera();
-
     auto cameraHelper = CameraHelper::create(virtualCamera);
 
     scene.add(cameraHelper);
@@ -118,10 +115,9 @@ int main() {
     auto plane = createPlane();
     scene.add(plane);
 
-    RobotController keyController(robot);
     OrbitControls controls(camera, canvas);
     Clock clock;
-    canvas.addKeyListener(keyController);
+    canvas.addKeyListener(ctrl);
 
 
 
@@ -146,13 +142,14 @@ int main() {
 
 
     canvas.animate([&] {
+        const auto dt = clock.getDelta();
+
+        robot.drive_raw(std::get<0>(ctrl.controllerOut()), std::get<1>(ctrl.controllerOut()), std::get<2>(ctrl.controllerOut()), std::get<3>(ctrl.controllerOut()));
+        ctrl.update();
+        robot.update(dt);
         renderer.setScissorTest(false);
         renderer.setViewport(0, 0, canvas.size().width(), canvas.size().height()); // Reset viewport explicitly if needed
 
-
-
-        const auto dt = clock.getDelta();
-        keyController.deltaTime = dt; // Move this to the start of the loop to ensure consistency
 
         renderer.clear();
 
@@ -163,29 +160,12 @@ int main() {
         renderer.setScissor(0, 0, 256 * canvas.aspect(), 256);
         renderer.setViewport(0, 0, 256 * canvas.aspect(), 256);
         renderer.render(scene, virtualCamera);
-
+        std::cout << ctrl.getWASD().LEFT_ALT << std::endl;
         renderer.setScissorTest(false); // Reset scissor test
         renderer.setViewport(0, 0, canvas.size().width(), canvas.size().height());
 
         controls.update();
 
-
-
-        /*
-        const auto dt = clock.getDelta();
-        renderer.setSize(canvas.size());
-
-        renderer.clear();
-
-        renderer.render(scene, camera);
-
-        renderer.clearDepth();
-        renderer.setViewport(0, 0, 256 * canvas.aspect(), 256);
-        renderer.setScissor(0, 0, 256 * canvas.aspect(), 256);
-        renderer.setScissorTest(true);
-        renderer.render(scene, virtualCamera);
-        //renderer.setViewport(0,0,canvas.size().width(), canvas.size().height());
-        renderer.setScissor(0,0,canvas.size().width(), canvas.size().height());*/
 
 
 

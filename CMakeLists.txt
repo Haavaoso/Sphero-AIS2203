@@ -24,7 +24,6 @@ FetchContent_MakeAvailable(SimpleSocket)
 
 add_executable(SpheroSim src/main.cpp)
 add_executable(shees src/lidar.cpp)
-add_executable(testtttt src/test.cpp)
 
 target_include_directories(SpheroSim PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
