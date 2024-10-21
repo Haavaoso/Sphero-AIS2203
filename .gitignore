@@ -12,7 +12,6 @@
 *.app
 *.ipa
 *.prl
-*.lib
 *.a
 
 # Precompiled Headers
@@ -23,7 +22,7 @@
 *.lai
 *.la
 *.a
-*.lib
+
 
 # Shared libraries (inc. Windows DLLs)
 *.dll
