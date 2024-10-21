@@ -5,6 +5,9 @@ set(CMAKE_CXX_STANDARD 20)
 include(FetchContent)
 set(THREEPP_BUILD_TESTS OFF)
 set(THREEPP_BUILD_EXAMPLES OFF)
+
+
+
 FetchContent_Declare(
         threepp
         GIT_REPOSITORY https://github.com/markaren/threepp.git
@@ -25,10 +28,12 @@ FetchContent_MakeAvailable(SimpleSocket)
 add_executable(SpheroSim src/main.cpp)
 add_executable(shees src/lidar.cpp)
 
+set(SFML_DIR "C:/libs/SFML-2.6.1/lib/cmake/SFML")
+find_package(SFML 2.6 REQUIRED COMPONENTS system window graphics network audio)
+
+
 target_include_directories(SpheroSim PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
 target_link_libraries(SpheroSim PUBLIC threepp::threepp simple_socket)
 
-
-
-
+target_link_libraries(shees PUBLIC sfml-system sfml-window)

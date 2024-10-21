@@ -2,11 +2,9 @@
 // Created by havso on 14/10/2024.
 //
 #include <vector>
-
 #include <iostream>
 #include <string>
 #include <sstream>
-
 
     std::vector<std::string> result = {
         "GD0044072501",
@@ -87,12 +85,7 @@ int decode(const char code[], int byte) {
 }
 
 
-
-
-
 int main() {
-
-
     bool checksum_valid = true;
     std::string lidarOutput_long;
     std::vector<int> lidar_ints;
@@ -105,23 +98,15 @@ int main() {
             checksum_valid = false;
         }
     }
-
     std::cout << "Checksum valid: " << checksum_valid << std::endl;
-
-
-
-
-
     if (checksum_valid) {
         for (int i = 3; i < lidar_output.size(); i++) {
             std::string lidarReading = lidar_output[i].substr(0, lidar_output[i].length() - 1);
-            std::cout  << lidarReading << std::endl;
+            //std::cout  << lidarReading << std::endl;
             lidarOutput_long += lidarReading;
         }
     }
-    std::cout << "Ogga: " << lidarOutput_long.size() << "        " << lidarOutput_long << std::endl;
-
-
+    //std::cout << "Ogga: " << lidarOutput_long.size() << "        " << lidarOutput_long << std::endl;
     // lidarOutput_long.pop_back();
     // lidarOutput_long.pop_back();
 
@@ -144,18 +129,14 @@ int main() {
 
 
 
-    int oooo= decode("J50", 3);
-    std::cout << oooo << std::endl;
 
-
-
+    /*
     for (auto result : result) {
         std::cout << result << std::endl;
     }
-
-
-
+    */
     return 0;
+
 }
 
 
