@@ -46,7 +46,6 @@
 
 ### Build Folders ###
 build/
-bin/
 obj/
 out/
 Release/
