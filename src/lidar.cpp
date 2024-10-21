@@ -5,8 +5,12 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <SFML/Graphics.hpp>
+#include <cmath>
 
-    std::vector<std::string> result = {
+#include "../cmake-build-debug/_deps/threepp-src/include/threepp/math/MathUtils.hpp"
+
+std::vector<std::string> lidar_output = {
         "GD0044072501",
         "00P",
         "00819",
@@ -47,6 +51,16 @@
 
 std::vector<double> message{};
 
+float scale_value(float input_value) {
+    float input_min=0;
+    float input_max=5000;
+    float output_min=0;
+    float output_max=200;
+    float calc = ((input_value - input_min) * (output_max - output_min)) / (input_max - input_min) + output_min;
+    return calc;
+}
+
+
 char checksumCalculation(const std::string& line) {
 //Adds the ASCII values of the characters torether. Then adjust for ASCII range
     int ascii_sum{};
@@ -56,23 +70,29 @@ char checksumCalculation(const std::string& line) {
     const char checksum = (ascii_sum & 0x3F) + 0x30;
     return checksum;
 }
-bool verifyLidarChecksum(const std::string& line) {
+bool verifyLidarLineChecksum(const std::string& line) {
     if (line.empty()) {
         return false;
     }
-
     const char checksumFromReading = line.back();
     //Extract the checksum from the last char from lidar reading
     const std::string lidarReading = line.substr(0, line.length() - 1);
     //Remove checksum from reading
     const char checksumCalculated = checksumCalculation(lidarReading);
-
     return checksumCalculated == checksumFromReading;
 }
-
-
-
-
+bool verifyChecksum(const std::vector<std::string>) {
+    bool checksum_valid = true;
+    for (size_t i = 1; i < lidar_output.size(); i++) {
+        const std::string& line = lidar_output[i];
+        if (verifyLidarLineChecksum(line)) {
+            continue;
+        } else {
+            checksum_valid = false;
+        }
+    }
+    return checksum_valid;
+}
 int decode(const char code[], int byte) {
     int value = 0;
     int i;
@@ -84,33 +104,26 @@ int decode(const char code[], int byte) {
     return value;
 }
 
+void drawRadiusLine(sf::RenderWindow& window, sf::CircleShape& circle, float angle_deg) {
+    float angle_radians = angle_deg * (threepp::math::PI / 180.0f);
+    sf::Vector2f endpoint(window.getSize().x / 2 + circle.getRadius() * cos(angle_radians),
+                          window.getSize().y / 2 + circle.getRadius() * sin(angle_radians));
+    sf::Vertex line[] = {
+        sf::Vertex(sf::Vector2f(window.getSize().x / 2, window.getSize().y / 2), sf::Color::Magenta), // Start at the center
+        sf::Vertex(endpoint, sf::Color::Magenta)
+    };
+    window.draw(line, 2, sf::Lines);
+}
 
-int main() {
-    bool checksum_valid = true;
+std::vector<int> lidarReadingDecoded(std::vector<std::string> input) {
+    std::vector<int> int_vector;
+
     std::string lidarOutput_long;
-    std::vector<int> lidar_ints;
-    std::vector<std::string> lidar_output= result;
-    for (size_t i = 1; i < lidar_output.size(); i++) {
-        const std::string& line = lidar_output[i];
-        if (verifyLidarChecksum(line)) {
-            continue;
-        } else {
-            checksum_valid = false;
-        }
+    for (int i = 3; i < input.size(); i++) {
+        std::string lidarReading = input[i].substr(0, input[i].length() - 1);
+        //std::cout  << lidarReading << std::endl;
+        lidarOutput_long += lidarReading;
     }
-    std::cout << "Checksum valid: " << checksum_valid << std::endl;
-    if (checksum_valid) {
-        for (int i = 3; i < lidar_output.size(); i++) {
-            std::string lidarReading = lidar_output[i].substr(0, lidar_output[i].length() - 1);
-            //std::cout  << lidarReading << std::endl;
-            lidarOutput_long += lidarReading;
-        }
-    }
-    //std::cout << "Ogga: " << lidarOutput_long.size() << "        " << lidarOutput_long << std::endl;
-    // lidarOutput_long.pop_back();
-    // lidarOutput_long.pop_back();
-
-
 
     for (uint64_t i = 0; i < lidarOutput_long.length(); i += 3) {
         std::string c(3, ' ');
@@ -118,23 +131,152 @@ int main() {
         c[1] = lidarOutput_long[i+1];
         c[2] = lidarOutput_long[i+2];
         int decodedValue = decode(c.c_str(), 3);
-        lidar_ints.push_back(decodedValue);
+        int_vector.push_back(decodedValue);
+    }
+    return int_vector;
+}
+
+sf::Vector2f polarToCartesian(float angle_degrees, float distance, const sf::Vector2f& center) {
+    float angle_radians = angle_degrees * (3.14159f / 180.0f); // Convert degrees to radians
+    float x = cos(angle_radians) * distance;  // Scale these based on your window dimensions or desired scale factor
+    float y = sin(angle_radians) * distance;
+    return sf::Vector2f(center.x + x, center.y - y);
+}
+
+
+void drawRadarOutput(sf::RenderWindow& window, std::vector<int> dist) {
+    float start_ang = 150;
+    float end_ang = 150+240;
+    float ang_step = 240.0f / static_cast<float>(dist.size());
+
+    std::vector<float> ang_rad_array(dist.size());
+    std::vector<float> ang_dist_array(dist.size());
+    std::cout << ang_step <<  "      SDHUAIFDHIUAE "  << std::endl;
+
+    for (int i = 0; i < dist.size(); i++) {
+        ang_dist_array[i] = scale_value(dist[i]);
+        if (ang_dist_array[i] > 250) {
+            std::cerr << "Calculation error" << std::endl;
+        }
+    }
+    for (int i = start_ang; i < end_ang; i++) {
+        float ang = start_ang + ang_step * i;
+        ang_rad_array[i] = ang * threepp::math::PI/180;
     }
 
 
-    // Print the decoded distances
-    for (int lidar_ints : lidar_ints) {
-        std::cout << lidar_ints << std::endl;
+    for (int i = 0; i < ang_rad_array.size(); i++) {
+        std::cout << "Rad " << ang_rad_array[i] << "  dist: " << ang_dist_array[i] << std::endl;
+    }
+
+
+    for (int i = 0; i < dist.size(); i++) {
+        sf::CircleShape point(3*i*0.01);
+        point.setFillColor(sf::Color::Green);
+
+        float x = cos(ang_rad_array[i]) * ang_dist_array[i] + window.getSize().x/2;
+        float y = sin(ang_rad_array[i]) * ang_dist_array[i] + window.getSize().y/2;
+        point.setPosition(x,y);
+        window.draw(point);
+    }
+    sf::CircleShape point2(10);
+    point2.setFillColor(sf::Color::Blue);
+    point2.setPosition( 300, 400);
+    window.draw(point2);
+}
+
+void drawRadarPoint(sf::RenderWindow& window, float angle_deg, float distance, const sf::Vector2f& center) {
+    sf::Vector2f pointPosition = polarToCartesian(angle_deg, distance, center);
+    sf::CircleShape point(3); // Smaller radius for clarity
+    point.setPosition(pointPosition);
+    point.setFillColor(sf::Color::Black);
+    window.draw(point);
+}
+
+
+int main() {
+    std::vector<int> lidar_ints;
+
+    if (verifyChecksum(lidar_output)) {
+        lidar_ints = lidarReadingDecoded(lidar_output);
+        for (int lidar_ints : lidar_ints) {
+            std::cout << lidar_ints << std::endl;
+        }
+        std::cout << "Checksum valid: " << "Yes" << std::endl;
+    }
+    else {
+        std::cout << "Checksum valid: " << "NO :(" << std::endl;
+        std::cout << "Lidar bogos output" << std::endl;
     }
 
 
 
 
-    /*
-    for (auto result : result) {
-        std::cout << result << std::endl;
+    sf::RenderWindow window(sf::VideoMode(800, 600), "Nerdar");
+
+    window.setFramerateLimit(60);
+
+    sf::CircleShape circle(270);
+    circle.setFillColor(sf::Color::Transparent);
+    circle.setOutlineThickness(5);
+    circle.setOutlineColor(sf::Color::Red);
+    float centerX = (window.getSize().x - 2 * circle.getRadius()) / 2.0f;
+    float centerY = (window.getSize().y - 2 * circle.getRadius()) / 2.0f;
+    circle.setPosition(centerX, centerY);
+
+
+    sf::Vertex line[] = {
+        sf::Vertex(sf::Vector2f(0, window.getSize().y / 2), sf::Color::Yellow),
+        sf::Vertex(sf::Vector2f(window.getSize().x, window.getSize().y / 2), sf::Color::Yellow)
+    };
+
+    sf::Vertex lineFWD[] = {
+        sf::Vertex(sf::Vector2f(window.getSize().x / 2, window.getSize().y / 2), sf::Color::Magenta),
+        sf::Vertex(sf::Vector2f(window.getSize().x/2, 0), sf::Color::Magenta)
+    };
+
+
+    // Define the center point (origo)
+    sf::CircleShape centerPoint(5); // small radius for the center point
+    centerPoint.setFillColor(sf::Color::Green);
+    // Position it at the center of the circle
+    centerPoint.setPosition(395, 295); // slight adjustment for the radius of the center point
+
+    // Define the midpoint between the center and the edge of the circle
+    sf::CircleShape midPoint(5);
+    midPoint.setFillColor(sf::Color::Blue);
+    // Calculate the midpoint position
+    float midX = circle.getPosition().x + circle.getRadius() + circle.getRadius() * 0.5f * cos(45 * (3.14159265 / 180)); // 45 degrees for example
+    float midY = circle.getPosition().y + circle.getRadius() + circle.getRadius() * 0.5f * sin(45 * (3.14159265 / 180));
+    midPoint.setPosition(midX - 5, midY - 5); // adjust for the radius of the midpoint
+
+    while (window.isOpen()) {
+        sf::Event event;
+        while (window.pollEvent(event)) {
+            if (event.type == sf::Event::Closed)
+                window.close();
+        }
+
+        window.clear(sf::Color::Black);  // Clear the previous frame
+
+        // Draw the circle, center point, and midpoint
+        window.draw(circle);
+        window.draw(centerPoint);
+        window.draw(midPoint);
+        window.draw(line, 2, sf::Lines);
+        window.draw(lineFWD, 2, sf::Lines);
+        drawRadiusLine(window, circle, 150+240);
+        drawRadiusLine(window, circle, 30+120);
+        drawRadarOutput(window, lidar_ints);
+
+
+
+        window.display(); // Display everything drawn
+
     }
-    */
+
+
+
     return 0;
 
 }

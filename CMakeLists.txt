@@ -36,4 +36,4 @@ target_include_directories(SpheroSim PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
 target_link_libraries(SpheroSim PUBLIC threepp::threepp simple_socket)
 
-target_link_libraries(shees PUBLIC sfml-system sfml-window)
+target_link_libraries(shees PUBLIC sfml-system sfml-window sfml-graphics)
