@@ -6,7 +6,7 @@ set(publicHeaders
 set(SOURCES
         RobotController.cpp
         SpheroRobot.cpp
-        #ImguiIntfac.cpp
+        ImguiIntfac.cpp
 )
 #  TextHandles.cpp)
 

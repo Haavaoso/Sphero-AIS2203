@@ -8,7 +8,7 @@
 #include "include/misc.hpp"
 #include "include/RobotController.hpp"
 #include <threepp/threepp.hpp>
-
+#include "include/ImguiIntfac.hpp"
 #include "threepp/helpers/CameraHelper.hpp"
 
 
@@ -142,6 +142,11 @@ int main() {
 
     //std::vector<std::unsigned char> imageData;
 
+    MyDriverGui driverGui(canvas);
+    driverGui.makeDpiAware();
+    std::array<float, 3> constantData = {1.23f, 4.56f, 7.89f};  // Example constant sensor data
+    driverGui.setSensorData(constantData);
+
 
     canvas.animate([&] {
         const auto dt = clock.getDelta();
@@ -167,6 +172,17 @@ int main() {
         renderer.setViewport(0, 0, canvas.size().width(), canvas.size().height());
 
         controls.update();
+
+        // Ensure ImGui gets the correct display size
+        auto& io = ImGui::GetIO();
+        io.DisplaySize = ImVec2(canvas.size().width(), canvas.size().height());
+
+        // Render ImGui UI (same flow as the working example)
+        driverGui.render();  // This should include the ImGui frame handling
+
+        // Optionally render other ImGui elements or handle DPI awareness
+        //driverGui.makeDpiAware();  // Adjust UI scaling based on DPI
+
 
 
 

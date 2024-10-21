@@ -44,7 +44,7 @@ add_executable(SpheroSim
         main.cpp
         src/RobotController.cpp
         src/SpheroRobot.cpp
-        #src/ImguiIntfac.cpp
+        src/ImguiIntfac.cpp
 )
 #add_executable(shees src/lidar.cpp)
 
