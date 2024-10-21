@@ -72,7 +72,6 @@ cmake-build-*/
 Makefile.in
 Makefile
 *.make
-*.cmake
 CMakeCache.txt
 CMakeFiles/
 CMakeScripts/
