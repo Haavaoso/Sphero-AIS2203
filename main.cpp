@@ -4,12 +4,14 @@
 //
 
 #include <iostream>
-#include "SpheroRobot.hpp"
-#include "misc.hpp"
-#include "keyboard_input.hpp"
+#include "include/SpheroRobot.hpp"
+#include "include/misc.hpp"
+#include "include/RobotController.hpp"
 #include <threepp/threepp.hpp>
 
 #include "threepp/helpers/CameraHelper.hpp"
+
+
 using namespace threepp;
 
 auto createPlane() {

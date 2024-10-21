@@ -6,13 +6,28 @@ include(FetchContent)
 set(THREEPP_BUILD_TESTS OFF)
 set(THREEPP_BUILD_EXAMPLES OFF)
 
+find_package(imgui CONFIG REQUIRED)
 
+find_package(glfw3 CONFIG REQUIRED)
+
+
+#set(glfw3_DIR "C:/vcpkg/installed/x64-windows/share/glfw3")
+
+add_subdirectory(src)
 
 FetchContent_Declare(
         threepp
         GIT_REPOSITORY https://github.com/markaren/threepp.git
-        GIT_TAG e3f61e4f93bbb3f3b64abe83d52cbfe6166df8e9
+        GIT_TAG 2e2397e0b7f0e639f254ea3046b70e53a71f0387
+        #GIT_PROGRESS TRUE
 )
+
+#set(THREEPP_BUILD_GLFW OFF)
+#set(THREEPP_BUILD_EXTERNAL OFF) # Disable external dependencies like glfw
+set(THREEPP_USE_EXTERNAL_GLFW ON)
+#set(THREEPP_BUILD_EXAMPLES OFF) # Just in case examples pull in glfw
+#set(THREEPP_BUILD_TESTS OFF)    # Disable tests to avoid unwanted dependencies
+
 FetchContent_MakeAvailable(threepp)
 
 set(SIMPLE_SOCKET_BUILD_TESTS OFF)
@@ -25,15 +40,20 @@ FetchContent_MakeAvailable(SimpleSocket)
 
 
 
-add_executable(SpheroSim src/main.cpp)
-add_executable(shees src/lidar.cpp)
+add_executable(SpheroSim
+        main.cpp
+        src/RobotController.cpp
+        src/SpheroRobot.cpp
+        #src/ImguiIntfac.cpp
+)
+#add_executable(shees src/lidar.cpp)
 
-set(SFML_DIR "C:/libs/SFML-2.6.1/lib/cmake/SFML")
-find_package(SFML 2.6 REQUIRED COMPONENTS system window graphics network audio)
+#set(SFML_DIR "C:/libs/SFML-2.6.1/lib/cmake/SFML")
+#find_package(SFML 2.6 REQUIRED COMPONENTS system window graphics network audio)
 
 
 target_include_directories(SpheroSim PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
-target_link_libraries(SpheroSim PUBLIC threepp::threepp simple_socket)
+target_link_libraries(SpheroSim PUBLIC threepp::threepp simple_socket imgui::imgui)
 
-target_link_libraries(shees PUBLIC sfml-system sfml-window sfml-graphics)
+#target_link_libraries(shees PUBLIC sfml-system sfml-window sfml-graphics)
