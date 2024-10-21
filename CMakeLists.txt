@@ -24,12 +24,13 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(SimpleSocket)
 
 
+set(SFML_DIR "${CMAKE_CURRENT_SOURCE_DIR}/libs/SFML-2.6.1/lib/cmake/SFML")
+find_package(SFML 2.6 COMPONENTS system window graphics REQUIRED)
+
 
 add_executable(SpheroSim src/main.cpp)
 add_executable(shees src/lidar.cpp)
 
-set(SFML_DIR "C:/libs/SFML-2.6.1/lib/cmake/SFML")
-find_package(SFML 2.6 REQUIRED COMPONENTS system window graphics network audio)
 
 
 target_include_directories(SpheroSim PUBLIC ${CMAKE_SOURCE_DIR}/include)
@@ -37,3 +38,13 @@ target_include_directories(SpheroSim PUBLIC ${CMAKE_SOURCE_DIR}/include)
 target_link_libraries(SpheroSim PUBLIC threepp::threepp simple_socket)
 
 target_link_libraries(shees PUBLIC sfml-system sfml-window sfml-graphics)
+
+add_custom_command(TARGET shees POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_SOURCE_DIR}/libs/SFML-2.6.1/bin"
+        $<TARGET_FILE_DIR:shees>)
+
+add_custom_command(TARGET SpheroSim POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_SOURCE_DIR}/libs/SFML-2.6.1/bin"
+        $<TARGET_FILE_DIR:SpheroSim>)
