@@ -21,6 +21,7 @@ public:
     threepp::PerspectiveCamera& getVirtualCamera();
     void update(float deltaTime);
 
+
 private:
 
     threepp::PerspectiveCamera virtualCamera{};
