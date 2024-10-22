@@ -44,7 +44,6 @@ set(CMAKE_PREFIX_PATH "${CMAKE_CURRENT_SOURCE_DIR}/libs/SFML-2.6.1")
 set(SFML_DIR "${CMAKE_CURRENT_SOURCE_DIR}/libs/SFML-2.6.1/lib/cmake/SFML")
 find_package(SFML 2.6 COMPONENTS system window graphics REQUIRED)
 
-
 add_executable(SpheroSim
         main.cpp
         src/RobotController.cpp
