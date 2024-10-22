@@ -22,6 +22,7 @@ public:
     void update(float deltaTime);
 
 private:
+
     threepp::PerspectiveCamera virtualCamera{};
     float leftMotorSpeed_{0.0f};
     float rightMotorSpeed_{0.0f};

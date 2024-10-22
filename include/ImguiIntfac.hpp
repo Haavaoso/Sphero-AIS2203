@@ -25,6 +25,8 @@ public:
 
 private:
     std::array<float, 3> sensorData_;
+
+    void variableCentering(float alignment);
 };
 
 #endif //THREEEEEPPPPSIMULATION_TEXTHANDLES_HPP

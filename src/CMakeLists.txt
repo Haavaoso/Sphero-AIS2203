@@ -7,6 +7,8 @@ set(SOURCES
         RobotController.cpp
         SpheroRobot.cpp
         ImguiIntfac.cpp
+        ObstacleWarnings.cpp
+
 )
 #  TextHandles.cpp)
 
