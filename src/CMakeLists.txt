@@ -8,10 +8,11 @@ set(SOURCES
         SpheroRobot.cpp
         ImguiIntfac.cpp
         ObstacleWarnings.cpp
+        Server.cpp
 
 )
 #  TextHandles.cpp)
 
 add_library(threeeeeppppSimulationLib ${SOURCES})
 target_include_directories(threeeeeppppSimulationLib PUBLIC ${publicHeaders})
-target_link_libraries(threeeeeppppSimulationLib PUBLIC threepp::threepp)
+target_link_libraries(threeeeeppppSimulationLib PUBLIC threepp::threepp simple_socket)
