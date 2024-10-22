@@ -9,11 +9,14 @@
 
 class Server {
     public:
-    explicit Server(const simple_socket::TCPServer server) : server_(server) {
-        simple_socket::TCPServer server(port);
+    explicit Server(const simple_socket::TCPServer &server) : server_(server) {
+
     }
+
+
+
 private:
-    simple_socket::TCPServer& server_;
+    const simple_socket::TCPServer& server_;
 };
 
 /*
@@ -25,25 +28,6 @@ private:
 #include "network_helper.hpp"
 
 
-std::vector<Rect> faceDetect(const Mat &image) {
-    Mat gray;
-    cvtColor(image, gray, COLOR_BGR2GRAY);
-    CascadeClassifier faceCascade;
-    if (!faceCascade.load("data/haarcascades/haarcascade_frontalface_default.xml")) {
-        throw std::runtime_error("failed to load face-cascade classifier");
-    }
-    std::vector<Rect> faces;
-    faceCascade.detectMultiScale(
-            gray,
-            faces,
-            1.1,// scaleFactor (Specifies how much the image size is reduced at each scale (e.g., 1.1 means 10% reduction))
-            5,  // minNeighbors (Determines how many neighbors each candidate rectangle should have to retain it. Higher values result in fewer detections but with higher quality.)
-            0 | CASCADE_SCALE_IMAGE,
-            Size(30, 30)// minSize (Minimum possible object size. Objects smaller than this are ignored.)
-    );
-
-    return faces;
-}
 
 void receiveData(const std::unique_ptr<simple_socket::SocketConnection> &connection, std::vector<unsigned char> &data) {
     std::vector<unsigned char> sizeBuffer(4); // get msg size
