@@ -1,32 +1,123 @@
-# Prerequisites
-*.d
+# Pragmatic .gitignore for C++ projects
 
-# Compiled Object files
-*.slo
-*.lo
+### C++ ###
+# Object files
 *.o
 *.obj
+*.exe
+*.so
+*.dylib
+*.out
+*.app
+*.ipa
+*.prl
+*.a
 
 # Precompiled Headers
 *.gch
 *.pch
 
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-
-# Fortran module files
-*.mod
-*.smod
-
 # Compiled Static libraries
 *.lai
 *.la
 *.a
-*.lib
+
+
+# Shared libraries (inc. Windows DLLs)
+*.so
+*.so.*
+*.dylib
 
 # Executables
 *.exe
 *.out
-*.app
+*.app/
+
+# Debug files
+*.pdb
+*.ilk
+*.dSYM/
+
+# Compiled Dynamic libraries
+*.dylib
+*.so
+
+### Build Folders ###
+build/
+obj/
+out/
+Release/
+Debug/
+x64/
+x86/
+build-*/
+cmake-build-*/
+
+### Compiler generated ###
+.depend
+*.sdf
+*.idb
+*.ipch
+/.vs/
+.vscode/
+*.tlog
+*.log
+*.intermediate.manifest
+*.lastbuildstate
+
+### Makefile generated files ###
+Makefile.in
+Makefile
+*.make
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+
+### Backup files ###
+*~
+*.bak
+*.swp
+*.swo
+
+### JetBrains IDEs ###
+.idea/
+*.iws
+*.iml
+*.ipr
+
+### Visual Studio Code ###
+.vscode/
+*.code-workspace
+
+### Visual Studio ###
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+### Xcode ###
+*.xcworkspace
+xcuserdata/
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+*.pbxuser
+*.moved-aside
+DerivedData/
+*.hmap
+*.ipa
+
+### Sublime Text ###
+*.sublime-workspace
+
+### Others ###
+.DS_Store
+Thumbs.db
+desktop.ini
