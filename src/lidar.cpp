@@ -10,6 +10,11 @@
 
 #include "../cmake-build-debug/_deps/threepp-src/include/threepp/math/MathUtils.hpp"
 
+struct LidarSetup;
+
+void drawRadarOutput(sf::RenderWindow& window, std::vector<int> dist, const LidarSetup& setup);
+
+
 std::vector<std::string> lidar_output = {
         "GD0044072501",
         "00P",
@@ -52,11 +57,11 @@ std::vector<std::string> lidar_output = {
 std::vector<double> message{};
 
 float scale_value(float input_value) {
-    float input_min=0;
-    float input_max=5000;
-    float output_min=0;
-    float output_max=200;
-    float calc = ((input_value - input_min) * (output_max - output_min)) / (input_max - input_min) + output_min;
+    constexpr float input_min=0;
+    constexpr float input_max=6000;
+    constexpr float output_min=0;
+    constexpr float output_max=200;
+    const float calc = ((input_value - input_min) * (output_max - output_min)) / (input_max - input_min) + output_min;
     return calc;
 }
 
@@ -67,7 +72,7 @@ char checksumCalculation(const std::string& line) {
     for (const char c : line) {
         ascii_sum += static_cast<int>(c);
     }
-    const char checksum = (ascii_sum & 0x3F) + 0x30;
+    const char checksum = static_cast<char>((ascii_sum & 0x3F) + 0x30);
     return checksum;
 }
 bool verifyLidarLineChecksum(const std::string& line) {
@@ -104,23 +109,14 @@ int decode(const char code[], int byte) {
     return value;
 }
 
-void drawRadiusLine(sf::RenderWindow& window, sf::CircleShape& circle, float angle_deg) {
-    float angle_radians = angle_deg * (threepp::math::PI / 180.0f);
-    sf::Vector2f endpoint(window.getSize().x / 2 + circle.getRadius() * cos(angle_radians),
-                          window.getSize().y / 2 + circle.getRadius() * sin(angle_radians));
-    sf::Vertex line[] = {
-        sf::Vertex(sf::Vector2f(window.getSize().x / 2, window.getSize().y / 2), sf::Color::Magenta), // Start at the center
-        sf::Vertex(endpoint, sf::Color::Magenta)
-    };
-    window.draw(line, 2, sf::Lines);
-}
+
 
 std::vector<int> lidarReadingDecoded(std::vector<std::string> input) {
     std::vector<int> int_vector;
 
     std::string lidarOutput_long;
     for (int i = 3; i < input.size(); i++) {
-        std::string lidarReading = input[i].substr(0, input[i].length() - 1);
+        const std::string lidarReading = input[i].substr(0, input[i].length() - 1);
         //std::cout  << lidarReading << std::endl;
         lidarOutput_long += lidarReading;
     }
@@ -136,149 +132,175 @@ std::vector<int> lidarReadingDecoded(std::vector<std::string> input) {
     return int_vector;
 }
 
-sf::Vector2f polarToCartesian(float angle_degrees, float distance, const sf::Vector2f& center) {
-    float angle_radians = angle_degrees * (3.14159f / 180.0f); // Convert degrees to radians
-    float x = cos(angle_radians) * distance;  // Scale these based on your window dimensions or desired scale factor
-    float y = sin(angle_radians) * distance;
-    return sf::Vector2f(center.x + x, center.y - y);
+sf::Vector2f polarToCartesian(float angle_rad, float distance, const sf::Vector2f& center) {
+    float x = cos(angle_rad) * distance + center.x;
+    float y = sin(angle_rad) * distance + center.y;
+    return {x, y};
 }
 
+/*
+void drawRadarOutput2(sf::RenderWindow& window) {
+    std::vector<int>dist2(682);
+    std::vector<float> ang_rad_array(dist2.size());
+    std::vector<float> ang_dist_array(dist2.size());
+    float stepppy = 240.0f / dist2.size();
 
-void drawRadarOutput(sf::RenderWindow& window, std::vector<int> dist) {
+
     float start_ang = 150;
     float end_ang = 150+240;
-    float ang_step = 240.0f / static_cast<float>(dist.size());
+    float ang_step = 240.0f / static_cast<float>(dist2.size());
 
-    std::vector<float> ang_rad_array(dist.size());
-    std::vector<float> ang_dist_array(dist.size());
-    std::cout << ang_step <<  "      SDHUAIFDHIUAE "  << std::endl;
-
-    for (int i = 0; i < dist.size(); i++) {
-        ang_dist_array[i] = scale_value(dist[i]);
-        if (ang_dist_array[i] > 250) {
-            std::cerr << "Calculation error" << std::endl;
-        }
-    }
-    for (int i = start_ang; i < end_ang; i++) {
-        float ang = start_ang + ang_step * i;
-        ang_rad_array[i] = ang * threepp::math::PI/180;
+    for (int i = 0; i < dist2.size(); i++) {
+        ang_dist_array[i] = 100;
     }
 
+    float stepss = 240.0f / dist2.size();
+    std::cerr << "STEEEP:  " << stepss << "OGGA: " << dist2.size() << std::endl;
+
+    for (int i = 0; i < dist2.size(); i++) {
+        float angle = i * ang_step + 150;
+        ang_rad_array[i] = angle * threepp::math::PI/180;
+    }
 
     for (int i = 0; i < ang_rad_array.size(); i++) {
-        std::cout << "Rad " << ang_rad_array[i] << "  dist: " << ang_dist_array[i] << std::endl;
-    }
-
-
-    for (int i = 0; i < dist.size(); i++) {
-        sf::CircleShape point(3*i*0.01);
+        std::cout << "Nr: " << i << "  Rad: " << ang_rad_array[i] << "  Dist: " << ang_dist_array[i] <<  std::endl;}
+    for (int i = 0; i < dist2.size(); i++) {
+        sf::CircleShape point(3.0f * static_cast<float>(i) *0.01f);
         point.setFillColor(sf::Color::Green);
-
-        float x = cos(ang_rad_array[i]) * ang_dist_array[i] + window.getSize().x/2;
-        float y = sin(ang_rad_array[i]) * ang_dist_array[i] + window.getSize().y/2;
+        float x = cos(ang_rad_array[i]) * ang_dist_array[i] + static_cast<float>(window.getSize().x) / 2.0f;
+        float y = sin(ang_rad_array[i]) * ang_dist_array[i] + static_cast<float>(window.getSize().y) / 2.0f;
         point.setPosition(x,y);
         window.draw(point);
     }
-    sf::CircleShape point2(10);
-    point2.setFillColor(sf::Color::Blue);
-    point2.setPosition( 300, 400);
-    window.draw(point2);
+}//TEST
+*/
+
+
+
+
+
+
+struct LidarSetup {
+    sf::CircleShape circle;
+    sf::Vertex line[2];
+    sf::Vertex lineFWD[2];
+    sf::Vertex radiusLineRight[2];
+    sf::Vertex radiusLineLeft[2];
+    sf::CircleShape centerPoint;
+};
+
+LidarSetup startup(const sf::RenderWindow& window) {
+    LidarSetup setup;
+
+    float windowX = static_cast<float>(window.getSize().x);
+    float windowsY = static_cast<float>(window.getSize().y);
+    float centerX = windowX / 2.0f;
+    float centerY = windowsY / 2.0f;
+
+    float radius = std::min(window.getSize().x, window.getSize().y) * 0.4f;
+    setup.circle.setRadius(radius);
+    setup.circle.setFillColor(sf::Color::Transparent);
+    setup.circle.setOutlineThickness(radius * 0.02f);
+    setup.circle.setOutlineColor(sf::Color::Red);
+
+
+    setup.circle.setPosition(centerX - radius, centerY - radius);
+
+    float angle1 = 30.0f * threepp::math::PI / 180.0f;
+    float angle2 = 150.0f * threepp::math::PI / 180.0f;
+
+    setup.radiusLineRight[0] = sf::Vertex(sf::Vector2f(centerX, centerY), sf::Color::Magenta);
+    setup.radiusLineRight[1] = sf::Vertex(sf::Vector2f(centerX + cos(angle1) * radius, centerY + sin(angle1) * radius), sf::Color::Magenta);
+    setup.radiusLineLeft[0] = sf::Vertex(sf::Vector2f(centerX, centerY), sf::Color::Magenta);
+    setup.radiusLineLeft[1] = sf::Vertex(sf::Vector2f(centerX + cos(angle2) * radius, centerY + sin(angle2) * radius), sf::Color::Magenta);
+
+    setup.line[0] = sf::Vertex(sf::Vector2f(0, centerY), sf::Color::Yellow);
+    setup.line[1] = sf::Vertex(sf::Vector2f(windowX, centerY), sf::Color::Yellow);
+
+    setup.lineFWD[0] = sf::Vertex(sf::Vector2f(centerX, centerY), sf::Color::Magenta);
+    setup.lineFWD[1] = sf::Vertex(sf::Vector2f(centerX, 0), sf::Color::Magenta);
+
+    setup.centerPoint.setRadius(radius * 0.02f);
+    setup.centerPoint.setFillColor(sf::Color::Green);
+    setup.centerPoint.setPosition(centerX - setup.centerPoint.getRadius(), centerY - setup.centerPoint.getRadius());
+    return setup;
 }
 
-void drawRadarPoint(sf::RenderWindow& window, float angle_deg, float distance, const sf::Vector2f& center) {
-    sf::Vector2f pointPosition = polarToCartesian(angle_deg, distance, center);
-    sf::CircleShape point(3); // Smaller radius for clarity
-    point.setPosition(pointPosition);
-    point.setFillColor(sf::Color::Black);
-    window.draw(point);
-}
+
+
+
 
 
 int main() {
     std::vector<int> lidar_ints;
 
+    sf::RenderWindow window(sf::VideoMode(800, 600), "Nerdar");
+    window.setFramerateLimit(60);
     if (verifyChecksum(lidar_output)) {
         lidar_ints = lidarReadingDecoded(lidar_output);
         for (int lidar_ints : lidar_ints) {
             std::cout << lidar_ints << std::endl;
         }
         std::cout << "Checksum valid: " << "Yes" << std::endl;
+
     }
     else {
         std::cout << "Checksum valid: " << "NO :(" << std::endl;
         std::cout << "Lidar bogos output" << std::endl;
+        return 99;
     }
 
-
-
-
-    sf::RenderWindow window(sf::VideoMode(800, 600), "Nerdar");
-
-    window.setFramerateLimit(60);
-
-    sf::CircleShape circle(270);
-    circle.setFillColor(sf::Color::Transparent);
-    circle.setOutlineThickness(5);
-    circle.setOutlineColor(sf::Color::Red);
-    float centerX = (window.getSize().x - 2 * circle.getRadius()) / 2.0f;
-    float centerY = (window.getSize().y - 2 * circle.getRadius()) / 2.0f;
-    circle.setPosition(centerX, centerY);
-
-
-    sf::Vertex line[] = {
-        sf::Vertex(sf::Vector2f(0, window.getSize().y / 2), sf::Color::Yellow),
-        sf::Vertex(sf::Vector2f(window.getSize().x, window.getSize().y / 2), sf::Color::Yellow)
-    };
-
-    sf::Vertex lineFWD[] = {
-        sf::Vertex(sf::Vector2f(window.getSize().x / 2, window.getSize().y / 2), sf::Color::Magenta),
-        sf::Vertex(sf::Vector2f(window.getSize().x/2, 0), sf::Color::Magenta)
-    };
-
-
-    // Define the center point (origo)
-    sf::CircleShape centerPoint(5); // small radius for the center point
-    centerPoint.setFillColor(sf::Color::Green);
-    // Position it at the center of the circle
-    centerPoint.setPosition(395, 295); // slight adjustment for the radius of the center point
-
-    // Define the midpoint between the center and the edge of the circle
-    sf::CircleShape midPoint(5);
-    midPoint.setFillColor(sf::Color::Blue);
-    // Calculate the midpoint position
-    float midX = circle.getPosition().x + circle.getRadius() + circle.getRadius() * 0.5f * cos(45 * (3.14159265 / 180)); // 45 degrees for example
-    float midY = circle.getPosition().y + circle.getRadius() + circle.getRadius() * 0.5f * sin(45 * (3.14159265 / 180));
-    midPoint.setPosition(midX - 5, midY - 5); // adjust for the radius of the midpoint
+    LidarSetup lidar = startup(window);
 
     while (window.isOpen()) {
-        sf::Event event;
+        sf::Event event{};
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed)
                 window.close();
         }
 
-        window.clear(sf::Color::Black);  // Clear the previous frame
+        window.clear(sf::Color::Black);
 
-        // Draw the circle, center point, and midpoint
-        window.draw(circle);
-        window.draw(centerPoint);
-        window.draw(midPoint);
-        window.draw(line, 2, sf::Lines);
-        window.draw(lineFWD, 2, sf::Lines);
-        drawRadiusLine(window, circle, 150+240);
-        drawRadiusLine(window, circle, 30+120);
-        drawRadarOutput(window, lidar_ints);
+        window.draw(lidar.circle);
+        window.draw(lidar.centerPoint);
+        window.draw(lidar.line, 2, sf::Lines);
+        window.draw(lidar.lineFWD, 2, sf::Lines);
+        window.draw(lidar.radiusLineRight, 2, sf::Lines);
+        window.draw(lidar.radiusLineLeft, 2, sf::Lines);
+        drawRadarOutput(window, lidar_ints,lidar);
 
-
-
-        window.display(); // Display everything drawn
-
+        window.display();
     }
-
-
-
     return 0;
 
 }
 
+
+
+void drawRadarOutput(sf::RenderWindow& window, std::vector<int> dist, const LidarSetup& setup) {
+    float ang_step = 240.0f / static_cast<float>(dist.size());
+
+    std::vector<float> ang_rad_array(dist.size());
+    std::vector<float> ang_dist_array(dist.size());
+
+    sf::Vector2f center(
+        setup.circle.getPosition().x + setup.circle.getRadius(),
+        setup.circle.getPosition().y + setup.circle.getRadius()
+    );
+
+    for (int i = 0; i < dist.size(); i++) {
+        ang_dist_array[i] = scale_value(static_cast<float>(dist[i]));
+        if (ang_dist_array[i] > 250) {
+            std::cerr << "Calculation error with scaling" << std::endl;
+        }
+        float angle = i * ang_step + 150; //+150 for aligning 120 degrees with forward heading
+        ang_rad_array[i] = angle * threepp::math::PI/180;
+        sf::CircleShape point(3.0f);
+        point.setFillColor(sf::Color::Green);
+        auto positions = polarToCartesian(ang_rad_array[i], ang_dist_array[i], center);
+        point.setPosition(positions);
+        window.draw(point);
+    }
+
+}
 
