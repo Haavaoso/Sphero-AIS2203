@@ -1,3 +1,4 @@
+
 cmake_minimum_required(VERSION 3.28)
 project(SpheroSim)
 set(CMAKE_CXX_STANDARD 20)
@@ -38,6 +39,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(SimpleSocket)
 
+set(CMAKE_PREFIX_PATH "${CMAKE_CURRENT_SOURCE_DIR}/libs/SFML-2.6.1")
 
 set(SFML_DIR "${CMAKE_CURRENT_SOURCE_DIR}/libs/SFML-2.6.1/lib/cmake/SFML")
 find_package(SFML 2.6 COMPONENTS system window graphics REQUIRED)
@@ -50,7 +52,7 @@ add_executable(SpheroSim
         src/ImguiIntfac.cpp
         src/ObstacleWarnings.cpp
 )
-#add_executable(shees src/lidar.cpp)
+add_executable(shees src/lidar.cpp)
 
 set(SFML_DIR "C:/libs/SFML-2.6.1/lib/cmake/SFML")
 find_package(SFML 2.6 REQUIRED COMPONENTS system window graphics network audio)
@@ -60,7 +62,7 @@ target_include_directories(SpheroSim PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
 target_link_libraries(SpheroSim PUBLIC threepp::threepp simple_socket imgui::imgui)
 
-#target_link_libraries(shees PUBLIC sfml-system sfml-window sfml-graphics)
+target_link_libraries(shees PUBLIC sfml-system sfml-window sfml-graphics)
 
 add_custom_command(TARGET shees POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
