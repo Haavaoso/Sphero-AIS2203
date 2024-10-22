@@ -35,7 +35,7 @@ set(SIMPLE_SOCKET_BUILD_TESTS OFF)
 FetchContent_Declare(
         SimpleSocket
         GIT_REPOSITORY https://github.com/markaren/SimpleSocket.git
-        GIT_TAG 13996f0f65d9294849e5044916ddc2a69edc5232
+        GIT_TAG e0e989bdd52137d743a4599e25167d5681a0de00
 )
 FetchContent_MakeAvailable(SimpleSocket)
 
@@ -58,8 +58,13 @@ add_executable(shees src/lidar.cpp)
 set(SFML_DIR "C:/libs/SFML-2.6.1/lib/cmake/SFML")
 find_package(SFML 2.6 REQUIRED COMPONENTS system window graphics network audio)
 
+# Define a variable for the include directory
+set(INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
 
-target_include_directories(SpheroSim PUBLIC ${CMAKE_SOURCE_DIR}/include)
+target_include_directories(main PUBLIC ${INCLUDE_DIR})
+target_include_directories(SpheroSim PUBLIC ${INCLUDE_DIR})
+
+target_link_libraries(main PUBLIC simple_socket)
 
 target_link_libraries(SpheroSim PUBLIC threepp::threepp simple_socket imgui::imgui)
 
