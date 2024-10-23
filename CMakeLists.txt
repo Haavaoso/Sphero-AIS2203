@@ -16,20 +16,20 @@ find_package(glfw3 CONFIG REQUIRED)
 
 add_subdirectory(src)
 
+
+
+#set(THREEPP_BUILD_GLFW OFF)
+#set(THREEPP_BUILD_EXTERNAL OFF) # Disable external dependencies like glfw
+#set(THREEPP_BUILD_EXAMPLES OFF) # Just in case examples pull in glfw
+#set(THREEPP_BUILD_TESTS OFF)    # Disable tests to avoid unwanted dependencies
+
 FetchContent_Declare(
         threepp
         GIT_REPOSITORY https://github.com/markaren/threepp.git
         GIT_TAG 2e2397e0b7f0e639f254ea3046b70e53a71f0387
-        #GIT_PROGRESS TRUE
 )
-
-#set(THREEPP_BUILD_GLFW OFF)
-#set(THREEPP_BUILD_EXTERNAL OFF) # Disable external dependencies like glfw
-set(THREEPP_USE_EXTERNAL_GLFW ON)
-#set(THREEPP_BUILD_EXAMPLES OFF) # Just in case examples pull in glfw
-#set(THREEPP_BUILD_TESTS OFF)    # Disable tests to avoid unwanted dependencies
-
 FetchContent_MakeAvailable(threepp)
+set(THREEPP_USE_EXTERNAL_GLFW ON)
 
 set(SIMPLE_SOCKET_BUILD_TESTS OFF)
 FetchContent_Declare(
